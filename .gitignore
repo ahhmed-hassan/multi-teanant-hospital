@@ -17,3 +17,4 @@ charts/*.tgz
 # OS
 .DS_Store
 Thumbs.db
+/app/HospitalApi/HospitalApi.sln
