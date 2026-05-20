@@ -5,12 +5,13 @@ obj/
 *.suo
 .vs/
 .idea/
+.vscode/
 
 # Helm
 *.tgz
 charts/*.tgz
 
-# Local overrides — never commit
+# Local overrides ï¿½ never commit
 *-local.yaml
 *-secret.yaml
 
