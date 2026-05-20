@@ -20,7 +20,7 @@ spec:
         app: {{ $appName }}
     spec:
       # Multi-tenancy: Tenant isolation via node constraints
-      # Values source: values-hospital-2.yaml (tenant.nodeLabel)
+      # Values source: values-hospital-2.yaml or values-hospital-1.yaml (tenant.nodeLabel)
       tolerations:
        - key: hospital
          operator: Equal 
