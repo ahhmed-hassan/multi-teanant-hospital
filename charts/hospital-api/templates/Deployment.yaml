@@ -1,0 +1,79 @@
+{{- $appName := .Release.Name }}
+# Deployment: Core workload definition
+# Values flow: values.yaml + values-hospital-2.yaml → Deployment → Pods
+# Dependencies: ConfigMap (must exist), ServiceAccount (if RBAC enabled)
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: {{ $appName }}
+  namespace: {{ .Release.Namespace}}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app:  {{ $appName}}
+  replicas: {{.Values.replicas}}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      # Multi-tenancy: Tenant isolation via node constraints
+      # Values source: values-hospital-2.yaml (tenant.nodeLabel)
+      tolerations:
+       - key: hospital
+         operator: Equal 
+         value: {{.Values.tenant.nodeLabel}}
+         effect: NoExecute
+      # Node affinity to schedule pods on hospital-specific nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: hospital
+                operator: In
+                values:
+                - {{.Values.tenant.nodeLabel}}
+      # Container specification
+      containers:
+      - name: api
+        image: {{ .Values.image.repository}}:{{ .Values.image.tag }}
+        imagePullPolicy: {{.Values.image.pullPolicy}}
+        ports:
+        - containerPort:  {{ .Values.service.containerPort | int }}
+        
+        # ConfigMap reference: Injects env vars from configmap.yaml
+        # Flow: values → configmap.yaml → ConfigMap object → Pod environment
+        envFrom: 
+        - configMapRef:
+            name: {{ $appName }}-config    # References configmap.yaml
+        # Resource requests and limits
+        resources: 
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+        
+        # Health checks
+        startupProbe:
+          httpGet:
+            path: /health/live
+            port: {{ .Values.service.containerPort | int }}
+          failureThreshold: 5
+          periodSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: {{ .Values.service.containerPort | int }}
+          failureThreshold: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: {{ .Values.service.containerPort | int }}
+          failureThreshold: 3
+          periodSeconds: 5

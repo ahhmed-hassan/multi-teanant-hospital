@@ -1,0 +1,14 @@
+# Service: Exposes the Deployment internally/externally
+# Selector matches: Deployment pod labels (app: release-name)
+# Routes traffic to: containerPort specified in Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.Release.Name}}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: {{.Release.Name}}                # Matches Deployment pod labels
+  ports:
+  - port: {{ .Values.service.port | int }}
+    targetPort: {{ .Values.service.containerPort | int }}  # Matches container port in Deployment

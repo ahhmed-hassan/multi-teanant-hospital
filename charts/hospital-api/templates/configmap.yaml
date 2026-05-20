@@ -1,0 +1,15 @@
+# ConfigMap: Stores application configuration
+# Created from: values.yaml (tenant config values)
+# Used by: Deployment.yaml (envFrom reference) → Pod environment variables
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{.Release.Name}}-config          # Matches Deployment's configMapRef name
+  namespace: {{.Release.Namespace}}
+data:
+    # Configuration data sourced from values
+    LOG_LEVEL: {{.Values.config.logLevel}}
+    TENANT_NAME: {{.Values.tenant.name}}  # From values-hospital-2.yaml
+
+
+
