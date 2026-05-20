@@ -1,3 +1,8 @@
+# Tenant-specific values for Hospital-2
+# These override default values in values.yaml when deployed with:
+# helm install hospital-2-api ./charts/hospital-api `
+#  --namespace hospital-2 `
+#  --values charts/hospital-api/values-hospital-2.yaml
 tenant:
-  name: hospital-2
-  nodeLabel: hospital-2
+  name: hospital-2          # Used in ConfigMap as TENANT_NAME env var
+  nodeLabel: hospital-2     # Used in Deployment tolerations and nodeAffinity
